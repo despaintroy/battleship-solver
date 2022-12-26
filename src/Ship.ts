@@ -8,12 +8,12 @@ export class Ship {
   ) {
     const endRow =
       orientation === "horizontal"
-        ? position.row + shipLengths[type] - 1
-        : position.row;
+        ? position.row
+        : position.row + shipLengths[type] - 1;
     const endCol =
       orientation === "vertical"
-        ? position.col + shipLengths[type] - 1
-        : position.col;
+        ? position.col
+        : position.col + shipLengths[type] - 1;
 
     if (!Coordinate.isValid(endRow, endCol)) {
       throw new Error("Ship os positioned outside the board");
@@ -74,4 +74,4 @@ export const shipLengths = {
   [ShipType.PATROL_BOAT]: 2,
 };
 
-type Orientation = "horizontal" | "vertical";
+export type Orientation = "horizontal" | "vertical";

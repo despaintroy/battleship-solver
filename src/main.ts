@@ -36,18 +36,31 @@ function updateProbabilityGrid() {
 
   const probabilityGrid = board.getProbabilityGrid();
 
-  probabilityGrid.forEach((row) => {
-    row.forEach((cell) => {
-      const probabilityGridCell = document.createElement("div");
-      probabilityGridCell.classList.add("probability-grid-cell");
-      const totalProbability = Object.values(cell).reduce(
+  let maxCellProbability = 0;
+
+  const summedProbabilityGrid = probabilityGrid.map((row) =>
+    row.map((cell) => {
+      const totalCellProbability = Object.values(cell).reduce(
         (acc, curr) => acc + curr,
         0
       );
-      probabilityGridCell.innerText = totalProbability.toFixed(2);
-      probabilityGridCell.style.backgroundColor = `rgba(0, 0, 0, ${totalProbability}`;
+      if (totalCellProbability > maxCellProbability) {
+        maxCellProbability = totalCellProbability;
+      }
+      return totalCellProbability;
+    })
+  );
+
+  summedProbabilityGrid.forEach((row) => {
+    row.forEach((probability) => {
+      const normalizedProbability = probability / maxCellProbability;
+
+      const probabilityGridCell = document.createElement("div");
+      probabilityGridCell.classList.add("probability-grid-cell");
+      probabilityGridCell.innerText = probability.toFixed(2);
+      probabilityGridCell.style.backgroundColor = `rgba(0, 0, 0, ${normalizedProbability}`;
       probabilityGridCell.style.color =
-        totalProbability > 0.5 ? "white" : "black";
+        normalizedProbability > 0.5 ? "white" : "black";
       probabilityGridElement.appendChild(probabilityGridCell);
     });
   });
