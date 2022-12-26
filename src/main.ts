@@ -1,23 +1,58 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import { setupCounter } from './counter'
+import { Coordinate } from "./coordinate";
+import { OpponentBoard } from "./OpponentBoard";
+import { ShipType } from "./Ship";
+import { Shot } from "./Shot";
+import "./style.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const board = new OpponentBoard();
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const addShotButton = document.createElement("button");
+addShotButton.innerText = "Shoot";
+addShotButton.addEventListener("click", () => {
+  const row = Math.floor(Math.random() * 10);
+  const col = Math.floor(Math.random() * 10);
+  const isHit = Math.random() > 0.5;
+  const shipType = isHit
+    ? Object.values(ShipType)[Math.floor(Math.random() * 5)]
+    : undefined;
+  const isValid = board.addShot(
+    new Shot(new Coordinate(row, col), isHit, shipType)
+  );
+
+  if (isValid) {
+    console.log(board.toString());
+    updateProbabilityGrid();
+  } else {
+    console.log("Invalid shot");
+  }
+});
+
+const probabilityGridElement = document.createElement("div");
+
+function updateProbabilityGrid() {
+  probabilityGridElement.classList.add("probability-grid");
+
+  probabilityGridElement.innerHTML = "";
+
+  const probabilityGrid = board.getProbabilityGrid();
+
+  probabilityGrid.forEach((row) => {
+    row.forEach((cell) => {
+      const probabilityGridCell = document.createElement("div");
+      probabilityGridCell.classList.add("probability-grid-cell");
+      const totalProbability = Object.values(cell).reduce(
+        (acc, curr) => acc + curr,
+        0
+      );
+      probabilityGridCell.innerText = totalProbability.toFixed(2);
+      probabilityGridCell.style.backgroundColor = `rgba(0, 0, 0, ${totalProbability}`;
+      probabilityGridCell.style.color =
+        totalProbability > 0.5 ? "white" : "black";
+      probabilityGridElement.appendChild(probabilityGridCell);
+    });
+  });
+}
+
+const app = document.querySelector<HTMLDivElement>("#app")!;
+app.appendChild(addShotButton);
+app.appendChild(probabilityGridElement);
