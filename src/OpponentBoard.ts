@@ -45,6 +45,9 @@ export class OpponentBoard {
 
     let totalPossibilities = 0;
 
+    const shotGrid = this.getShotGrid();
+    const shotsByShipType = this.getShotsByShipType();
+
     while (true) {
       totalPossibilities++;
 
@@ -55,14 +58,34 @@ export class OpponentBoard {
           carrierState.orientation
         );
 
-        carrier
-          .getCoordinates()
-          .forEach(
-            (coordinate) =>
-              (possibilitiesCount[coordinate.row][coordinate.col][
-                ShipType.CARRIER
-              ] += 1)
-          );
+        const carrierCoordinates = carrier.getCoordinates();
+
+        if (
+          carrierCoordinates.some((coordinate) => {
+            const supposedToBeThere = shotGrid[coordinate.row][coordinate.col];
+            return (
+              supposedToBeThere &&
+              supposedToBeThere.shipType !== ShipType.CARRIER
+            );
+          })
+        ) {
+          throw new Error("Something else is supposed to be in this space");
+        }
+
+        if (
+          !shotsByShipType["Carrier"].every((carrierShot) =>
+            carrierCoordinates.some((cc) => cc.equals(carrierShot.coordinate))
+          )
+        ) {
+          throw new Error("Carrier isn't where it's supposed to be");
+        }
+
+        carrierCoordinates.forEach(
+          (coordinate) =>
+            (possibilitiesCount[coordinate.row][coordinate.col][
+              ShipType.CARRIER
+            ] += 1)
+        );
       } catch {
         // no-op: Invalid ship position
       }
@@ -127,6 +150,24 @@ export class OpponentBoard {
     });
 
     return grid;
+  }
+
+  public getShotsByShipType(): Record<ShipType, Shot[]> {
+    const shotsByShipType: Record<ShipType, Shot[]> = {
+      [ShipType.CARRIER]: [],
+      [ShipType.BATTLESHIP]: [],
+      [ShipType.DESTROYER]: [],
+      [ShipType.SUBMARINE]: [],
+      [ShipType.PATROL_BOAT]: [],
+    };
+
+    this.shots.forEach((shot) => {
+      if (shot.shipType) {
+        shotsByShipType[shot.shipType].push(shot);
+      }
+    });
+
+    return shotsByShipType;
   }
 
   public toString(): string {

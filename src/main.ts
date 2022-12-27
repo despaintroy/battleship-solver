@@ -69,3 +69,5 @@ function updateProbabilityGrid() {
 const app = document.querySelector<HTMLDivElement>("#app")!;
 app.appendChild(addShotButton);
 app.appendChild(probabilityGridElement);
+
+updateProbabilityGrid();
